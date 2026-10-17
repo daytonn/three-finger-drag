@@ -1,0 +1,14 @@
+[Unit]
+Description=Three-finger drag for touchpad
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+TimeoutStartSec=300
+ExecStartPre=%h/.local/share/three-finger-drag/ensure-venv.sh
+ExecStart=%h/.local/share/three-finger-drag/venv/bin/python %h/.local/share/three-finger-drag/three_finger_drag.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=graphical-session.target
