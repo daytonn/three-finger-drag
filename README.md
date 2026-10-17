@@ -8,7 +8,7 @@ Put three fingers on the trackpad and move them: the left mouse button is held a
 
 There are two parts:
 
-1. **`three_finger_drag.py`** is a small daemon that reads the touchpad's raw multitouch events through evdev. Once three fingers have moved past a small threshold, it holds the left button and moves the pointer on a virtual mouse (uinput). libinput treats three-finger contact as a gesture rather than pointer motion, so the pointer never moves twice.
+1. **`three-finger-drag`** is a small Rust daemon that reads the touchpad's raw multitouch events through evdev. Once three fingers have moved past a small threshold, it holds the left button and moves the pointer on a virtual mouse (uinput). libinput treats three-finger contact as a gesture rather than pointer motion, so the pointer never moves twice.
 2. **The `disable-three-finger-swipe@daytonnolan.com` GNOME Shell extension** turns off GNOME's built-in three-finger swipes (workspace switching and the overview) so they don't fire during a drag. Four-finger gestures and two-finger scrolling are unchanged.
 
 The daemon runs as a systemd user service that starts with your graphical session.
@@ -16,7 +16,7 @@ The daemon runs as a systemd user service that starts with your graphical sessio
 ## Requirements
 
 - GNOME Shell 46 or newer (tested on Zorin OS 18 / GNOME 46, Wayland)
-- Python 3 with `venv`, plus `gcc` and Python headers to build `python-evdev` (`sudo apt install python3-venv python3-dev gcc`)
+- Rust, to build the daemon. The version is pinned in `.tool-versions`, so with [asdf](https://asdf-vm.com) run `asdf plugin add rust && asdf install` in the repo.
 - A multitouch touchpad that reports three-finger contact (`BTN_TOOL_TRIPLETAP`)
 
 ## Install
@@ -37,11 +37,19 @@ systemctl --user status three-finger-drag
 
 - adds you to the `input` group so the daemon can read the touchpad
 - installs a udev rule that makes `/dev/uinput` writable by the `input` group
-- copies the daemon to `~/.local/share/three-finger-drag` and builds its virtualenv
+- builds the daemon with `cargo build --release` and installs it to `~/.local/bin/three-finger-drag`
 - installs and enables the systemd user service
 - installs and enables the GNOME extension
 
 > **Note:** Members of the `input` group can read all input devices, including keyboards. This is normal for gesture tools, but be aware of it.
+
+## Development
+
+```sh
+cargo build --release
+install -m755 target/release/three-finger-drag ~/.local/bin/
+systemctl --user restart three-finger-drag
+```
 
 ## Configuration
 
@@ -69,7 +77,7 @@ This leaves the `input` group membership and the udev rule in place, and prints 
 
 - **`"/dev/uinput" cannot be opened for writing`** means the udev rule hasn't been applied yet. Run `sudo udevadm trigger --name-match=uinput` or reboot.
 - **GNOME's three-finger swipes are back after a GNOME upgrade** means GNOME probably renamed the internals the extension relies on. The drag still works, but the extension needs updating.
-- **The service fails after an OS upgrade.** `ensure-venv.sh` runs before each start and rebuilds the virtualenv if a Python upgrade broke it. Check `journalctl --user -u three-finger-drag` for details.
+- **The service isn't running.** Check `journalctl --user -u three-finger-drag` for details.
 
 ## License
 

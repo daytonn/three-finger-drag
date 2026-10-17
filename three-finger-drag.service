@@ -4,9 +4,7 @@ PartOf=graphical-session.target
 After=graphical-session.target
 
 [Service]
-TimeoutStartSec=300
-ExecStartPre=%h/.local/share/three-finger-drag/ensure-venv.sh
-ExecStart=%h/.local/share/three-finger-drag/venv/bin/python %h/.local/share/three-finger-drag/three_finger_drag.py
+ExecStart=%h/.local/bin/three-finger-drag
 Restart=always
 RestartSec=3
 
