@@ -21,7 +21,7 @@ jobs:
       TARGET: ${{ matrix.arch }}-unknown-linux-musl
       ASSET: three-finger-drag-${{ matrix.arch }}-linux.tar.gz
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Check tag matches Cargo.toml version
         run: |
@@ -42,7 +42,7 @@ jobs:
           tar -C "target/$TARGET/release" -czf "$ASSET" three-finger-drag
           sha256sum "$ASSET" > "$ASSET.sha256"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.arch }}
           path: three-finger-drag-*
@@ -51,7 +51,7 @@ jobs:
     needs: build
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           merge-multiple: true
 
