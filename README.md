@@ -16,7 +16,8 @@ The daemon runs as a systemd user service that starts with your graphical sessio
 ## Requirements
 
 - GNOME Shell 46 or newer (tested on Zorin OS 18 / GNOME 46, Wayland)
-- Rust, to build the daemon. The version is pinned in `.tool-versions`, so with [asdf](https://asdf-vm.com) run `asdf plugin add rust && asdf install` in the repo.
+- `curl` (prebuilt binaries are provided for x86_64 and aarch64)
+- Rust, only if you build from source. The version is pinned in `.tool-versions`, so with [asdf](https://asdf-vm.com) run `asdf plugin add rust && asdf install` in the repo.
 - A multitouch touchpad that reports three-finger contact (`BTN_TOOL_TRIPLETAP`)
 
 ## Install
@@ -37,7 +38,7 @@ systemctl --user status three-finger-drag
 
 - adds you to the `input` group so the daemon can read the touchpad
 - installs a udev rule that makes `/dev/uinput` writable by the `input` group
-- builds the daemon with `cargo build --release` and installs it to `~/.local/bin/three-finger-drag`
+- downloads the prebuilt daemon for this version from GitHub Releases, verifies its checksum, and installs it to `~/.local/bin/three-finger-drag`. If no binary is available it builds from source instead; run `./install.sh --build` to always build from source.
 - installs and enables the systemd user service
 - installs and enables the GNOME extension
 
@@ -50,6 +51,16 @@ cargo build --release
 install -m755 target/release/three-finger-drag ~/.local/bin/
 systemctl --user restart three-finger-drag
 ```
+
+### Releasing
+
+Bump `version` in `Cargo.toml`, commit, then tag and push:
+
+```sh
+git tag v0.2.0 && git push origin v0.2.0
+```
+
+The [Release workflow](.github/workflows/release.yml) builds static (musl) binaries for x86_64 and aarch64 and publishes them, with SHA-256 checksums, as a GitHub release. The tag must match the `Cargo.toml` version.
 
 ## Configuration
 

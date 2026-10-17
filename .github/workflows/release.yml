@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    env:
+      TARGET: ${{ matrix.arch }}-unknown-linux-musl
+      ASSET: three-finger-drag-${{ matrix.arch }}-linux.tar.gz
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check tag matches Cargo.toml version
+        run: |
+          version=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)
+          test "v$version" = "$GITHUB_REF_NAME" || { echo "Tag $GITHUB_REF_NAME != Cargo.toml v$version"; exit 1; }
+
+      - name: Install Rust (version from .tool-versions)
+        run: |
+          rust=$(awk '$1 == "rust" { print $2 }' .tool-versions)
+          rustup toolchain install "$rust" --profile minimal --target "$TARGET"
+          rustup default "$rust"
+
+      - name: Build
+        run: cargo build --release --locked --target "$TARGET"
+
+      - name: Package
+        run: |
+          tar -C "target/$TARGET/release" -czf "$ASSET" three-finger-drag
+          sha256sum "$ASSET" > "$ASSET.sha256"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.arch }}
+          path: three-finger-drag-*
+
+  release:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" three-finger-drag-* --repo "$GITHUB_REPOSITORY" --generate-notes
