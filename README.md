@@ -74,7 +74,7 @@ systemctl --user daemon-reload && systemctl --user restart three-finger-drag
 | --- | --- | --- |
 | `--speed N` | `4.0` | Pointer units per mm of finger travel |
 | `--threshold MM` | `1.0` | Movement needed before the drag starts, so three-finger taps still work |
-| `--release-delay S` | `0` | Seconds to keep the button held after lifting, so you can reposition your fingers mid-drag |
+| `--release-delay S` | `0.5` | Seconds to keep the button held after lifting, so you can reposition your fingers mid-drag. Set to `0` to drop immediately |
 
 ## Uninstall
 

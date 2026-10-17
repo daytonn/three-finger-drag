@@ -36,7 +36,7 @@ struct Options {
 }
 
 fn parse_args() -> Result<Options, String> {
-    let mut opts = Options { speed: 4.0, threshold: 1.0, release_delay: Duration::ZERO };
+    let mut opts = Options { speed: 4.0, threshold: 1.0, release_delay: Duration::from_millis(500) };
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
         let (flag, inline) = match arg.split_once('=') {
@@ -48,7 +48,7 @@ fn parse_args() -> Result<Options, String> {
                 "Usage: three-finger-drag [--speed N] [--threshold MM] [--release-delay S]\n\n\
                  --speed N           pointer units per mm of finger travel (default 4.0)\n\
                  --threshold MM      mm of movement before the drag starts, so 3-finger taps still work (default 1.0)\n\
-                 --release-delay S   seconds to keep the button held after lifting (default 0)"
+                 --release-delay S   seconds to keep the button held after lifting (default 0.5)"
             );
             std::process::exit(0);
         }
